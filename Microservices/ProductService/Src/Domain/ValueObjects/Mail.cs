@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Domain.ValueObjects;
 
 public class Mail
@@ -11,7 +13,6 @@ public class Mail
 
     public static Mail Create(string value)
     {
-        // Aquí puedes agregar validaciones para asegurarte de que el correo electrónico sea válido
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Email no puede ser vacío.");
 
