@@ -1,6 +1,6 @@
 namespace Application.DTOs;
 
-public class UserDto
+public class ProductDto
 {
     public record Request();
     public record Response();

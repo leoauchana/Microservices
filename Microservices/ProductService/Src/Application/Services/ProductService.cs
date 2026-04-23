@@ -3,10 +3,10 @@ using Domain.Interfaces;
 
 namespace Application;
 
-public class UserService : IUserService
+public class ProductService : IProductService
 {
     private readonly IRepository _repository;
-    public UserService(IRepository repository)
+    public ProductService(IRepository repository)
     {
         _repository = repository;
     }
