@@ -12,5 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Transversal\Transversal.csproj"/>
   </ItemGroup>
 </Project>
