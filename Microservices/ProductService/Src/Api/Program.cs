@@ -1,32 +1,27 @@
 using Application;
+using Data;
 using Api.Middleware;
 using Transversal.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
-
+// Add options patterns.
 builder.Services.AddOptions<DatabaseOptions>()
     .Bind(builder.Configuration.GetSection(DatabaseOptions.Section))
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+// Add services to the container.
 builder.Services.AddApplicationServices();
+builder.Services.AddDataServices();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseMiddleware<ExceptionMiddleware>();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-
+// app.UseAuthentication();
+// app.UseAuthorization();
+app.MapControllers();
 app.Run();

@@ -15,7 +15,7 @@ public static class ServiceExtensions
         services.AddDbContext<ProductServiceContext>((opt, conf) =>
         {
             var dbOptions = opt.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-            conf.UseNpgsql(dbOptions.Db_User);
+            conf.UseNpgsql(dbOptions.Db_Product);
         });
     }
 }
