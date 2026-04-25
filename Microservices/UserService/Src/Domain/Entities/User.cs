@@ -4,13 +4,13 @@ public class User : EntityBase
 {
     public string Username { get; private set; } = null!;
     public string Password { get; private set; } = null!;
-    public string Mail { get; private set; } = null!;
+    public string Email { get; private set; } = null!;
 
-    public User(string username, string password, string mail)
+    public User(string username, string password, string email)
     {
         Username = username;
         Password = password;
-        Mail = mail;
+        Email = email;
     }
 }
 
