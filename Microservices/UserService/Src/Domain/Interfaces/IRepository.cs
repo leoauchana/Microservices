@@ -1,3 +1,6 @@
+using System.Linq.Expressions;
+using Domain.Common;
+
 namespace Domain.Interfaces;
 
 public interface IRepository
