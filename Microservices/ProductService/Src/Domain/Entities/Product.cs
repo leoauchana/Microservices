@@ -17,4 +17,9 @@ public class Product : EntityBase
         Stock = stock;
     }
     public Product() { }
+
+    public void ReduceStock(int quantity)
+    {
+        Stock -= quantity;
+    }
 }

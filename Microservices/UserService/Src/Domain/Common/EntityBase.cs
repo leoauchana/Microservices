@@ -2,9 +2,9 @@ namespace Domain.Common;
 
 public class EntityBase
 {
-    public guid Id { get; set; }
+    public Guid Id { get; set; }
     public EntityBase()
     {
-        Id = guid.newguid();
+        Id = Guid.NewGuid();
     }
 }

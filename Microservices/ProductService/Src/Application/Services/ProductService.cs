@@ -15,7 +15,7 @@ public class ProductService : IProductService
         _repository = repository;
     }
 
-    public async Task<bool> CreateProduct(ProductDto.Request newProduct)
+    public async Task<bool> Create(ProductDto.Request newProduct)
     {
         var productFound = await _repository.GetTheFirstOne<Product>(p => p.Name.Equals(newProduct.name));
 
@@ -29,11 +29,11 @@ public class ProductService : IProductService
         return true;
     }
 
-    public async Task<List<ProductDto.Response>> GetAllProducts()
+    public async Task<List<ProductDto.Response>> GetAll()
     {
         var products = await _repository.GetAll<Product>();
 
-        if (!products.Any()) return [];
+        if (!products.Any()) return new List<ProductDto.Response>();
 
         return products.Select(p =>
             new ProductDto.Response
@@ -41,7 +41,7 @@ public class ProductService : IProductService
             .ToList();
     }
 
-    public async Task<ProductDto.Response> GetProductById(string id)
+    public async Task<ProductDto.Response> GetById(string id)
     {
         var idValidated = id.ValidateId();
 
@@ -53,5 +53,23 @@ public class ProductService : IProductService
         return new ProductDto.Response
             (product.Id, product.Name, product.Description,
             product.Price, product.Stock);
+    }
+    public async Task<bool> ReduceStock(string id, int quantity)
+    {
+        if (quantity <= 0)
+            throw new FormatInvalidException("The format the quantity is invalid");
+        
+        var idProduct = id.ValidateId();
+
+        var productFound = await _repository.GetForId<Product>(idProduct);
+
+        if (productFound == null)
+            throw new EntityNotFoundEception("The product not found");
+
+        productFound.ReduceStock(quantity);
+
+        await _repository.Update(productFound);
+
+        return true;
     }
 }

@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Context;
@@ -9,6 +10,8 @@ public class UserServiceContext : DbContext
     {
 
     }
+
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,8 +36,13 @@ public class UserServiceContext : DbContext
         .IsRequired();
 
         modelBuilder.Entity<User>()
-            .Property(u => u.Email)
-            .HasMaxLength(40)
+            .Property(a => a.Email)
+            .HasConversion(
+                email => email.Value,
+                value => Email.Create(value)
+            )
+            .HasColumnType("varchar")
+            .HasMaxLength(50)
             .IsRequired();
     }
 }

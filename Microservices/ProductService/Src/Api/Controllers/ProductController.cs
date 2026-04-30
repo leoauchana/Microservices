@@ -16,7 +16,7 @@ public class ProductController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ProductDto.Request request)
     {
-        var result = await _productService.CreateProduct(request);
+        var result = await _productService.Create(request);
 
         if (!result) return BadRequest("Failed to create product");
 
@@ -26,18 +26,26 @@ public class ProductController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var products = await _productService.GetAllProducts();
+        var products = await _productService.GetAll();
         return Ok(new { products = products, count = products.Count });
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
-        var product = await _productService.GetProductById(id);
+        var product = await _productService.GetById(id);
 
         if (product == null) return BadRequest("Error getting product");
 
         return Ok(product);
     }
+    [HttpPatch("{id}/reduce")]
+    public async Task<IActionResult> ReduceStock(string id, [FromBody] ProductDto.Stock quantity)
+    {
+        var reduceStock = await _productService.ReduceStock(id, quantity.quantity);
 
+        if (reduceStock) return BadRequest("Error reducing stock");
+
+        return Ok("Reduce stock successfully");
+    }
 }
