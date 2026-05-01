@@ -13,6 +13,5 @@ public interface IRepository
     Task Update<TEntity>(TEntity entity) where TEntity : EntityBase;
     Task Delete<TEntity>(TEntity entity) where TEntity : EntityBase;
     Task<TEntity?> GetForId<TEntity>(Guid id, params string[] included) where TEntity : EntityBase;
-    Task<TEntity> GetForIdWith<TEntity>(Guid id, params Expression<Func<TEntity, object>>[] included) where TEntity : EntityBase;
     Task<List<TEntity>> GetAll<TEntity>() where TEntity : EntityBase;
 }

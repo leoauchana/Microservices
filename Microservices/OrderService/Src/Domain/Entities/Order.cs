@@ -15,5 +15,6 @@ public class Order : EntityBase
         UserId = userId;
         Date = date;
     }
+    public Order() { }
     public void AddOrderItem(OrderItem newOrder) => _orderItems.Add(newOrder);
 }
