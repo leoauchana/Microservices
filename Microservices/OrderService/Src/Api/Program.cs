@@ -1,6 +1,6 @@
 using Application;
-using Data;
-using Transversal.Configurations;
+using Infraestructure;
+using Infraestructure.Configurations.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +10,7 @@ builder.Services.AddOptions<DatabaseOptions>()
     .ValidateOnStart();
 
 builder.Services.AddApplicationServices();
-builder.Services.AddDataServices();
+builder.Services.AddInfraestructureServices();
 builder.Services.AddControllers();
 
 var app = builder.Build();

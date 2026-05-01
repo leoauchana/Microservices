@@ -2,6 +2,6 @@
 
 public class OrderItemDto
 {
-    public record Request();
-    public record Response();
+    public record Request(string idProduct, int quantity);
+    public record Response(ProductDto.Response product, int quantity, float subtotal);
 }

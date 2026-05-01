@@ -9,6 +9,7 @@ public class Order : EntityBase
     public DateOnly Date {  get; private set; }
     private readonly List<OrderItem> _orderItems = new();
     public IReadOnlyCollection<OrderItem> OrderItems => _orderItems;
+    public float Total => _orderItems.Sum(oi => oi.SubTotal);
     public Order(int number, Guid userId, DateOnly date)
     {
         Number = number;

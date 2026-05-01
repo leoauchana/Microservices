@@ -1,15 +1,14 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Data.Context;
+namespace Infraestructure.Data.Context;
 
 public class OrderServiceContext : DbContext
 {
-    public OrderServiceContext(DbContextOptions<OrderServiceContext> options) : base(options)
-    {
+	public OrderServiceContext(DbContextOptions<OrderServiceContext> options) : base(options)
+	{
 
-    }
-
+	}
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> Items { get; set; }
 
@@ -55,7 +54,7 @@ public class OrderServiceContext : DbContext
             .IsRequired();
         modelBuilder.Entity<OrderItem>()
             .Property(o => o.UnitPrice)
-            .HasColumnType("flaot")
+            .HasColumnType("float")
             .IsRequired();
     }
 }

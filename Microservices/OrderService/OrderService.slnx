@@ -4,6 +4,7 @@
     <Project Path="Src/Application/Application.csproj" />
     <Project Path="Src/Data/Data.csproj" />
     <Project Path="Src/Domain/Domain.csproj" />
+    <Project Path="Src/Infraestructure/Infraestructure.csproj" />
     <Project Path="Src/Transversal/Transversal.csproj" />
   </Folder>
 </Solution>
