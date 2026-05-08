@@ -9,11 +9,11 @@ public class OrderItem : EntityBase
     public Order Order { get; private set; } = null!;
     public float UnitPrice { get; private set; }
     public float SubTotal => UnitPrice * Quantity;
-    public OrderItem(Order order, Guid productId, int quantity)
+    public OrderItem(Guid productId, int quantity, float unitPrice)
     {
-        Order = order;
         ProductId = productId;
         Quantity = quantity;
+        UnitPrice = unitPrice;
     }
     public OrderItem() { }
 }
