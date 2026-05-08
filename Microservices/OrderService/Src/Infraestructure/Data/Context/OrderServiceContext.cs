@@ -24,10 +24,6 @@ public class OrderServiceContext : DbContext
         modelBuilder.Entity<Order>()
             .HasKey(o => o.Id);
         modelBuilder.Entity<Order>()
-            .Property(o => o.Number)
-            .HasColumnType("int")
-            .IsRequired();
-        modelBuilder.Entity<Order>()
             .Property(o => o.Date)
             .HasColumnType("date")
             .IsRequired();
