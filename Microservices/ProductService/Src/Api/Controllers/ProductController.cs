@@ -37,7 +37,7 @@ public class ProductController : ControllerBase
 
         if (product == null) return BadRequest("Error getting product");
 
-        return Ok(product);
+        return Ok(new { productFound = product });
     }
     [HttpPatch("{id}/reduce")]
     public async Task<IActionResult> ReduceStock(string id, [FromBody] ProductDto.Stock quantity)
