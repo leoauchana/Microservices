@@ -15,6 +15,9 @@ public class ProductService : IProductService
         _repository = repository;
     }
 
+
+    // Services for the API
+
     public async Task<bool> Create(ProductDto.Request newProduct)
     {
         var productFound = await _repository.GetTheFirstOne<Product>(p => p.Name.Equals(newProduct.name));
@@ -54,21 +57,45 @@ public class ProductService : IProductService
             (product.Id, product.Name, product.Description,
             product.Price, product.Stock);
     }
-    public async Task<bool> ReduceStock(string id, int quantity)
+
+    // Services for the order service
+
+    public async Task<List<ProductDto.Response>> GetByIds(List<string> productIds)
     {
-        if (quantity <= 0)
-            throw new FormatInvalidException("The format the quantity is invalid");
-        
-        var idProduct = id.ValidateId();
+        var productList = new List<Product>();
+        foreach (var id in productIds)
+        {
+            var idProduct = id.ValidateId();
 
-        var productFound = await _repository.GetForId<Product>(idProduct);
+            var productFound = await _repository.GetForId<Product>(idProduct);
+            if(productFound == null)
+                throw new EntityNotFoundEception($"The product with id {id} not found");
+            productList.Add(productFound);
+        }
+        return productList.Select(p =>
+            new ProductDto.Response
+            (p.Id, p.Name, p.Description, p.Price, p.Stock))
+            .ToList();
+    }
 
-        if (productFound == null)
-            throw new EntityNotFoundEception("The product not found");
+    public async Task<bool> ReduceStock(List<ProductDto.Stock> productStock)
+    {
+        foreach (var productInf in productStock)
+        {
+            if (productInf.quantity <= 0)
+                throw new FormatInvalidException("The format the quantity is invalid");
 
-        productFound.ReduceStock(quantity);
+            var idProduct = productInf.idProduct.ValidateId();
 
-        await _repository.Update(productFound);
+            var productFound = await _repository.GetForId<Product>(idProduct);
+
+            if (productFound == null)
+                throw new EntityNotFoundEception("The product not found");
+
+            productFound.ReduceStock(productInf.quantity);
+
+            await _repository.Update(productFound);
+        }
 
         return true;
     }
