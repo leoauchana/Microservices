@@ -8,4 +8,5 @@ public class ProductDto
     // DTOs for response of services 
     public record ValidateProduct(float price, int stock);
     public record Get(string id, string name, float price, int stock);
+    public record ReduceStock(string id, int quantity);
 }

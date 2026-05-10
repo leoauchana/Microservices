@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Application.Interfaces.ExternalServices;
-using Infraestructure.Services;
+using Infraestructure.ExternalServices.ServicesClient;
 namespace Infraestructure;
 
 public static class ServiceExtensions

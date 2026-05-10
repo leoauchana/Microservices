@@ -23,7 +23,7 @@ public class OrderService : IOrderService
         _userService = userService;
         _productService = productService;
     }
-    public async Task<bool> Create(OrderDto.Request newOrder)
+    public async Task<bool> Create(OrderDto.Create newOrder)
     {
         var idUserValidated = newOrder.idUser.ValidateId();
 
@@ -60,18 +60,69 @@ public class OrderService : IOrderService
             orderCreated.AddOrderItem(new OrderItem(pr.id.ValidateId(), quantity, pr.price));
         }
 
+        await _productService.ReduceStock();
+
         await _repository.Add(orderCreated);
 
         return true;
     }
 
-    public Task<List<OrderDto.Response>> GetAll()
+    public async Task<List<OrderDto.GetAll>> GetAll()
     {
-        throw new NotImplementedException();
+        var orderList = await _repository.ListAll<Order>(nameof(OrderItem));
+
+        if (!orderList.Any())
+            return new List<OrderDto.GetAll>();
+
+        var dtoList = new List<OrderDto.GetAll>();
+
+        foreach (var order in orderList)
+        {
+            var userFound = await _userService.GetById(order.UserId);
+
+            if (userFound == null)
+                throw new EntityNotFoundException($"The user with id {order.UserId} associated to order with id {order.Id} does not exist");
+
+            dtoList.Add(new OrderDto.GetAll(
+                order.Id.ToString(), 
+                new UserDto.Response(userFound.fullName, userFound.email),
+                order.OrderItems.Count,
+                order.Total,
+                order.Date));
+        }
+
+        return dtoList;
     }
 
-    public Task<OrderDto.Response> GetById(string id)
+    public async Task<OrderDto.GetById> GetById(string id)
     {
-        throw new NotImplementedException();
+        var idValidated = id.ValidateId();
+
+        var orderFound = await _repository.GetForId<Order>(idValidated, nameof(OrderItem));
+
+        if (orderFound == null)
+            throw new EntityNotFoundException("The order does not exist");
+
+        var userFound = await _userService.GetById(orderFound.UserId);
+
+        if (userFound == null)
+            throw new EntityNotFoundException("The user does not exist");
+
+        var productsId = orderFound.OrderItems.Select(oi => oi.ProductId).ToList();
+
+        var listProducts = await _productService.GetAllById(productsId);
+
+        if (!(listProducts!.Count == productsId.Count))
+            throw new EntityNotFoundException("Some products do not exist");
+
+        var listOrderItems = orderFound.OrderItems.Select(oi =>
+        {
+            var product = listProducts.First(p => p.id.ValidateId() == oi.ProductId);
+            return new OrderItemDto.Response(new ProductDto.Response(product.name, product.price), oi.Quantity, oi.SubTotal);
+        }).ToList();
+
+        return new OrderDto.GetById(orderFound.Id.ToString(),
+            new UserDto.Response(userFound.fullName, userFound.email),
+            listOrderItems, orderFound.Total, orderFound.Date);
     }
 }
