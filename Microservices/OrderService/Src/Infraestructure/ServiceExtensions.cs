@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Application.Interfaces.ExternalServices;
 using Infraestructure.ExternalServices.ServicesClient;
+using Infraestructure.ExternalServices.Mapper;
 namespace Infraestructure;
 
 public static class ServiceExtensions

@@ -60,7 +60,7 @@ public class OrderService : IOrderService
             orderCreated.AddOrderItem(new OrderItem(pr.id.ValidateId(), quantity, pr.price));
         }
 
-        await _productService.ReduceStock();
+        await _productService.ReduceStock(orderItemsByProduct);
 
         await _repository.Add(orderCreated);
 

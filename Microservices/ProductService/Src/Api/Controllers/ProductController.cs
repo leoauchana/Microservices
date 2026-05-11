@@ -42,7 +42,7 @@ public class ProductController : ControllerBase
 
     // Endpoints for microservices communication
 
-    [HttpGet("getByIds")]
+    [HttpPost("getByIds")]
     public async Task<IActionResult> GetByIds([FromBody] List<string> ids)
     {
         var products = await _productService.GetByIds(ids);
@@ -52,12 +52,14 @@ public class ProductController : ControllerBase
         return Ok(new { productsFound = products, count = products.Count });
     }
 
-    [HttpPatch("{id}/reduce")]
-    public async Task<IActionResult> ReduceStock([FromBody] List<ProductDto.Stock> productStock)
+    [HttpPatch("reduceStock")]
+    public async Task<IActionResult> ReduceStock([FromBody] Dictionary<Guid, int> productStock)
     {
-        var reduceStock = await _productService.ReduceStock(productStock);
+        var reduceProductStock = productStock.Select(ps => new ProductDto.Stock(ps.Key.ToString(), ps.Value)).ToList();
 
-        if (reduceStock) return BadRequest("Error reducing stock");
+        var reduceStock = await _productService.ReduceStock(reduceProductStock);
+
+        if (!reduceStock) return BadRequest("Error reducing stock");
 
         return Ok("Reduce stock successfully");
     }

@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces.ExternalServices;
+using Domain.Contracts;
 using System.Net;
 using System.Net.Http.Json;
 namespace Infraestructure.ExternalServices.ServicesClient;
@@ -12,7 +13,7 @@ public class UserService : IUserService
     {
         _httpClient = httpClient;
     }
-    public async Task<UserDto.GetById?> GetById(Guid userId)
+    public async Task<UserSnapshot?> GetById(Guid userId)
     {
         var response = await _httpClient.GetAsync($"{BaseUrl}/getById/{userId}");
 
@@ -21,7 +22,7 @@ public class UserService : IUserService
 
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<UserDto.GetById>();
+        return await response.Content.ReadFromJsonAsync<UserSnapshot>();
     }
     public async Task<bool> Validate(Guid userId)
     {
