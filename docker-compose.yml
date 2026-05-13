@@ -1,0 +1,28 @@
+services:
+
+  gateway:
+    image: gateway_service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - order_service
+      - product_service
+      - user_service
+
+  order_service:
+    image: order_service
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+
+  product_service:
+    image: product_service
+    environment:
+      - ASPNETCORE_URLS=http://+:5001
+
+  user_service:
+    image: user_service
+    environment:
+      - ASPNETCORE_URLS=http://+:5002
