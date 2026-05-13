@@ -1,4 +1,4 @@
-FROM msr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 ARG BUILD_CONFIGURATION=Release
 
@@ -17,7 +17,7 @@ WORKDIR /src/Src/Api
 
 RUN dotnet publish -c ${BUILD_CONFIGURATION} -o /app/publish --no-restore
 
-FROM msr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 WORKDIR /app
 
