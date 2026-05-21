@@ -15,7 +15,6 @@ public class ProductService : IProductService
         _repository = repository;
     }
 
-
     // Services for the API
 
     public async Task<bool> Create(ProductDto.Request newProduct)
