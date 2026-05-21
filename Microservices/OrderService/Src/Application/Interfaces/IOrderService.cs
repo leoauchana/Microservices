@@ -8,3 +8,4 @@ public interface IOrderService
     Task<OrderDto.GetById> GetById(string id);
     Task<List<OrderDto.GetAll>> GetAll();
 }
+  

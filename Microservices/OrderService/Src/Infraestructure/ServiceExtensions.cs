@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Application.Interfaces.ExternalServices;
 using Infraestructure.ExternalServices.ServicesClient;
-using Infraestructure.ExternalServices.Mapper;
 namespace Infraestructure;
 
 public static class ServiceExtensions
@@ -23,9 +22,15 @@ public static class ServiceExtensions
             .Bind(configuration.GetSection(ServicesOptions.Section))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        services.AddOptions<RabbitMqOptions>()
+            .Bind(configuration.GetSection(RabbitMqOptions.Section))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddScoped<IRepository, Repository>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
+        services.AddSingleton<RabbitMqConnection>();
         services.AddDbContext<OrderServiceContext>((opt, conf) =>
         {
             var dbOptions = opt.GetRequiredService<IOptions<DatabaseOptions>>().Value;

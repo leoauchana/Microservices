@@ -2,7 +2,6 @@
 using Domain.Contracts;
 using Infraestructure.ExternalServices.DTOs;
 using Infraestructure.ExternalServices.Mapper;
-using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Json;
 namespace Infraestructure.ExternalServices.ServicesClient;
@@ -44,9 +43,18 @@ public class ProductService : IProductService
 
         return await response.Content.ReadFromJsonAsync<ProductSnapshot>();
     }
-    public async Task ReduceStock(Dictionary<Guid, int> productStock)
+    // public async Task ReduceStock(Dictionary<Guid, int> productStock)
+    // {
+    //     var response = await _httpClient.PatchAsJsonAsync($"{BaseUrl}/reduceStock", productStock);
+
+    //     if (response.StatusCode == HttpStatusCode.NotFound)
+    //         return;
+
+    //     response.EnsureSuccessStatusCode();
+    // }
+    public async Task ReduceStock(OrderCreatedEvent orderCreated)
     {
-        var response = await _httpClient.PatchAsJsonAsync($"{BaseUrl}/reduceStock", productStock);
+        var response = await _httpClient.PatchAsJsonAsync($"{BaseUrl}/reduceStock", orderCreated);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return;

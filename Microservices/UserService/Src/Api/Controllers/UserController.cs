@@ -30,7 +30,7 @@ public class UserController : ControllerBase
     {
         var users = await _userService.GetAll();
         
-        return Ok(new { users = users, count = users.Count });
+        return Ok(new { users, count = users.Count });
     }
     [HttpGet("{idUser}")]
     public async Task<IActionResult> GetById(string idUser)

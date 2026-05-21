@@ -25,13 +25,13 @@ public class OrderController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var orders = await _orederService.GetAll();
-        return Ok(new { orders = orders, count = orders.Count });
+        return Ok(new { orders, count = orders.Count });
     }
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string orderId)
     {
         var orderFound = await _orederService.GetById(orderId);
         if (orderFound == null) return NotFound("Order not found.");
-        return Ok(new { orderFound = orderFound });
+        return Ok(new { orderFound });
     }
 }

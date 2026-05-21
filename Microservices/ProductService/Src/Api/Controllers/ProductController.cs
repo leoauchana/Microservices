@@ -27,7 +27,7 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var products = await _productService.GetAll();
-        return Ok(new { products = products, count = products.Count });
+        return Ok(new { products, count = products.Count });
     }
 
     [HttpGet("{id}")]
@@ -52,10 +52,22 @@ public class ProductController : ControllerBase
         return Ok(new { productsFound = products, count = products.Count });
     }
 
+    // [HttpPatch("reduceStock")]
+    // public async Task<IActionResult> ReduceStock([FromBody] Dictionary<Guid, int> productStock)
+    // {
+    //     var reduceProductStock = productStock.Select(ps => new ProductDto.Stock(ps.Key.ToString(), ps.Value)).ToList();
+
+    //     var reduceStock = await _productService.ReduceStock(reduceProductStock);
+
+    //     if (!reduceStock) return BadRequest("Error reducing stock");
+
+    //     return Ok("Reduce stock successfully");
+    // }
+
     [HttpPatch("reduceStock")]
-    public async Task<IActionResult> ReduceStock([FromBody] Dictionary<Guid, int> productStock)
+    public async Task<IActionResult> ReduceStock([FromBody] ProductDto.ReduceStock stock)
     {
-        var reduceProductStock = productStock.Select(ps => new ProductDto.Stock(ps.Key.ToString(), ps.Value)).ToList();
+        var reduceProductStock = stock.productStock.Select(ps => new ProductDto.Stock(ps.Key.ToString(), ps.Value)).ToList();
 
         var reduceStock = await _productService.ReduceStock(reduceProductStock);
 

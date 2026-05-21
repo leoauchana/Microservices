@@ -15,13 +15,17 @@ public class OrderService : IOrderService
     private readonly IProductService _productService;
     // Reference to the user service
     private readonly IUserService _userService;
+    // Reference to the message publisher
+    private readonly IMessagePublisher _messagePublisher;
     public OrderService(IRepository repository
         , IUserService userService
-        , IProductService productService)
+        , IProductService productService
+        , IMessagePublisher messagePublisher)
     {
         _repository = repository;
         _userService = userService;
         _productService = productService;
+        _messagePublisher = messagePublisher;
     }
     public async Task<bool> Create(OrderDto.Create newOrder)
     {
@@ -34,21 +38,29 @@ public class OrderService : IOrderService
         if (!existsUser)
             throw new EntityNotFoundException("The user does not exist");
 
-        // Validar productos con el id proveniente del dto de orderItem
+        // Validate products with the id of order item from dto
 
         var productIds = newOrder.orderItems.Select(oi => oi.idProduct.ValidateId()).ToList();
+
+        // Get products for the id
 
         var listProducts = await _productService.GetAllById(productIds);
 
         if (!(listProducts!.Count == productIds.Count))
             throw new EntityNotFoundException("Some products do not exist");
+        
+        // Order created 
 
         var orderCreated = new Order(idUserValidated);
+
+        // Map to dictionary with product id and stock quantity to reduce
 
         var orderItemsByProduct = newOrder.orderItems
                                         .ToDictionary(
                                         x => x.idProduct.ValidateId(),
                                         x => x.quantity);
+
+        // Add order item to order created
 
         foreach (var pr in listProducts)
         {
@@ -60,16 +72,26 @@ public class OrderService : IOrderService
             orderCreated.AddOrderItem(new OrderItem(pr.id.ValidateId(), quantity, pr.price));
         }
 
-        await _productService.ReduceStock(orderItemsByProduct);
+        // Order saved
 
         await _repository.Add(orderCreated);
+
+        // Message publicated 
+
+        await _messagePublisher.PublishMessage(
+            RabbitMqTopics.OrdersExchange,
+            RabbitMqTopics.OrderCreatedRoutingKey,
+            new OrderCreatedEvent(orderItemsByProduct)
+        );
+        // Se comento la llamada al microservicio de producto con comunicacion sincrona
+        // await _productService.ReduceStock(orderItemsByProduct);
 
         return true;
     }
 
     public async Task<List<OrderDto.GetAll>> GetAll()
     {
-        var orderList = await _repository.ListAll<Order>(nameof(OrderItem));
+        var orderList = await _repository.ListAll<Order>(nameof(Order.OrderItems));
 
         if (!orderList.Any())
             return new List<OrderDto.GetAll>();
@@ -79,7 +101,6 @@ public class OrderService : IOrderService
         foreach (var order in orderList)
         {
             var userFound = await _userService.GetById(order.UserId);
-
             if (userFound == null)
                 throw new EntityNotFoundException($"The user with id {order.UserId} associated to order with id {order.Id} does not exist");
 
