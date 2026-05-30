@@ -11,6 +11,7 @@ services:
       - order_service
       - product_service
       - user_service
+      - report_service
 
   order_service:
     image: order_service
@@ -26,6 +27,12 @@ services:
     image: user_service
     environment:
       - ASPNETCORE_URLS=http://+:5002
+
+  report_service:
+    image: report_service
+    environment:
+      - ASPNETCORE_URLS=http://+:5003
+
   rabbitmq:
     image: rabbitmq:management
 
