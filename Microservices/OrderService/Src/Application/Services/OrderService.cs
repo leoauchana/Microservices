@@ -81,7 +81,11 @@ public class OrderService : IOrderService
         await _messagePublisher.PublishMessage(
             RabbitMqTopics.OrdersExchange,
             RabbitMqTopics.OrderCreatedRoutingKey,
-            new OrderCreatedEvent(orderItemsByProduct)
+            new OrderCreatedEvent(
+                orderCreated.Id,
+                (decimal)orderCreated.Total,
+                orderCreated.Date,
+                orderItemsByProduct)
         );
         // Se comento la llamada al microservicio de producto con comunicacion sincrona
         // await _productService.ReduceStock(orderItemsByProduct);

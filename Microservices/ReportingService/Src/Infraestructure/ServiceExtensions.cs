@@ -6,6 +6,7 @@ using Application.Interfaces.Repositories;
 using Infraestructure.Data.Configurations;
 using Infraestructure.Data.Persistence;
 using Infraestructure.Data.Repository;
+using Infraestructure.Messaging.RabbitMq.Consumers;
 namespace Infraestructure;
 
 public static class ServiceExtensions
@@ -14,9 +15,6 @@ public static class ServiceExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddSingleton<RabbitMqConnection>();
-        services.AddSingleton<IDbConnectionFactory, NpgSqlConnectionFactory>();
-        services.AddScoped<IReportRepository, ReportRepository>();
         services.AddOptions<RabbitMqOptions>()
         .Bind(configuration.GetSection(RabbitMqOptions.Section))
         .ValidateDataAnnotations()
@@ -25,5 +23,10 @@ public static class ServiceExtensions
         .Bind(configuration.GetSection(DatabaseOptions.Section))
         .ValidateDataAnnotations()
         .ValidateOnStart();
+        services.AddSingleton<RabbitMqConnection>();
+        services.AddSingleton<IDbConnectionFactory, NpgSqlConnectionFactory>();
+        services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddHostedService<OrderCreatedConsumer>();
+        services.AddHostedService<ProductCreatedConsumer>();
     }
 }

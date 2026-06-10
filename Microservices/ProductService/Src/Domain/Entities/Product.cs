@@ -6,10 +6,10 @@ public class Product : EntityBase
 {
     public string Name { get; private set; } = null!;
     public string Description { get; private set; } = null!;
-    public float Price { get; private set; }
+    public decimal Price { get; private set; }
     public int Stock { get; private set; }
 
-    public Product(string name, string description, float price, int stock)
+    public Product(string name, string description, decimal price, int stock)
     {
         Name = name;
         Description = description;

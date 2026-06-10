@@ -1,8 +1,8 @@
 namespace Infraestructure.Messaging.RabbitMq.Events;
 
 public record OrderCreatedEvent(
-    string idOrder,
+    Guid idOrder,
     decimal total,
     DateOnly creationDate,
-    Dictionary<string, int> productStock
+    Dictionary<Guid, int> productStock
 );

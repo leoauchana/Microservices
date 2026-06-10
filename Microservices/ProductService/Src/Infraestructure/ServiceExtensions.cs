@@ -1,9 +1,11 @@
-﻿using Domain.Interfaces;
+﻿using Application.Messaging.RabbitMq.Interfaces;
+using Domain.Interfaces;
 using Infraestructure.Configurations;
 using Infraestructure.Data.Repository;
 using Infraestructure.Messaging.RabbitMq.Configurations;
 using Infraestructure.Messaging.RabbitMq.Connections;
 using Infraestructure.Messaging.RabbitMq.Consumers;
+using Infraestructure.Messaging.RabbitMq.Publishers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,7 @@ public static class ServiceExtensions
         services.AddScoped<IRepository, Repository>();
         services.AddSingleton<RabbitMqConnection>();
         services.AddHostedService<OrderCreatedConsumer>();
+        services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 
         services.AddDbContext<Data.Context.ProductServiceContext>((opt, conf) =>
         {

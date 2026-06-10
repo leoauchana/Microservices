@@ -78,7 +78,14 @@ public class OrderCreatedConsumer : BackgroundService
             var productService = scope.ServiceProvider
                                         .GetRequiredService
                                         <IProductService>();
-            var reduceProductStock = orderCreatedEvent.productStock.Select(ps => new ProductDto.Stock(ps.Key.ToString(), ps.Value)).ToList();
+                                        
+            var reduceProductStock = orderCreatedEvent
+                                        .productStock
+                                        .Select(ps => 
+                                        new ProductDto.Stock
+                                        (ps.Key.ToString(), 
+                                        ps.Value))
+                                        .ToList();
             
             await productService.ReduceStock(reduceProductStock);
 

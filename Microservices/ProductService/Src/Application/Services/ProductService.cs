@@ -1,6 +1,9 @@
 using Application.DTOs;
 using Application.Exceptions;
 using Application.Interfaces;
+using Application.Messaging.RabbitMq;
+using Application.Messaging.RabbitMq.Events;
+using Application.Messaging.RabbitMq.Interfaces;
 using Application.Utilities;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -10,9 +13,11 @@ namespace Application;
 public class ProductService : IProductService
 {
     private readonly IRepository _repository;
-    public ProductService(IRepository repository)
+    private readonly IMessagePublisher _messagePublisher;
+    public ProductService(IRepository repository, IMessagePublisher messagePublisher)
     {
         _repository = repository;
+        _messagePublisher = messagePublisher;
     }
 
     // Services for the API
@@ -27,6 +32,13 @@ public class ProductService : IProductService
         var product = new Product(newProduct.name, newProduct.description, newProduct.price, newProduct.stock);
 
         await _repository.Add(product);
+
+        var productCreatedEvent = new ProductCreatedEvent(product.Id, product.Name, product.Price, product.Description);    
+
+        await _messagePublisher.PublishMessage(
+            RabbitMqTopics.ProductsExchange,
+            RabbitMqTopics.ProductCreatedRoutingKey,
+            productCreatedEvent);
 
         return true;
     }

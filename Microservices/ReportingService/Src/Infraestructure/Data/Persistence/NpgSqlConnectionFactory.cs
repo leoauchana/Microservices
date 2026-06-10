@@ -16,6 +16,10 @@ public class NpgSqlConnectionFactory : IDbConnectionFactory
     }
     public async Task<IDbConnection> CreateConnection()
     {
-        return new NpgsqlConnection(_databaseOptions.Db_Report);
+        var connection =new NpgsqlConnection(_databaseOptions.Db_Report);
+        
+        await connection.OpenAsync();
+
+        return connection;
     }
 }

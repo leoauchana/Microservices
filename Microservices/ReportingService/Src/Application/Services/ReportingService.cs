@@ -28,25 +28,37 @@ public class ReportingService : IReportingService
     }
 
     public async Task<bool> RegisterOrderCreated(
-        string idOrder,
+        Guid idOrder,
         decimal total,
         DateOnly creationDate,
-        Dictionary<string, int> productStock)
+        Dictionary<Guid, int> productStock)
     {
-        var idOrderValidated = idOrder.ValidateId();
-
         Dictionary<Guid, int> productStockValidated = new Dictionary<Guid, int>();
         foreach (var productId in productStock)
         {
-            productStockValidated.Add(productId.Key.ValidateId(), productId.Value);
+            productStockValidated.Add(productId.Key, productId.Value);
         }
         if (total <= 0)
             throw new FormatInvalidException("Total must be greater than zero.");
         await _repository.RegisterOrderCreated(
-                                    idOrderValidated,
+                                    idOrder,
                                     total,
                                     creationDate,
                                     productStockValidated);
+        return true;
+    }
+
+    public async Task<bool> RegisterProductCreated(Guid idProduct,
+                                                    string name,
+                                                    string description,
+                                                    DateOnly creationDate)
+    {
+        // TODO: Implement method to register product created
+        await _repository.RegisterProductCreated(
+                                    idProduct,
+                                    name,
+                                    description,
+                                    creationDate);
         return true;
     }
 }

@@ -30,7 +30,7 @@ public class ProductServiceContext : DbContext
             .IsRequired()
             .HasMaxLength(200);
             entity.Property(e => e.Price)
-            .HasColumnType("float")
+            .HasColumnType("decimal(10,2)")
             .IsRequired();
             entity.Property(e => e.Stock)
             .HasColumnType("int")

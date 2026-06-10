@@ -33,7 +33,7 @@ public class ReportRepository : IReportRepository
         {
             sql.Append("""
         
-                        AND creation_date = @Date
+                        AND creationdate = @Date
                         """);
         }
         sql.Append("""
@@ -62,19 +62,19 @@ public class ReportRepository : IReportRepository
         try
         {
             string orderSql = """
-                    INSERT INTO orders (id_order, total, creationDate)
+                    INSERT INTO orders (id, total, creationdate)
                     VALUES (@Id, @Total, @CreationDate)
                     """;
-                    
+
             await connection.ExecuteAsync(orderSql, new
             {
                 Id = orderId,
                 Total = total,
-                CreationDate = creationDate
+                CreationDate = creationDate.ToDateTime(TimeOnly.MinValue)
             }, transaction);
 
             string orderItemSql = """
-                    INSERT INTO orders (id_order, total, creationDate)
+                    INSERT INTO order_item (id, orderid, productid, quantity)
                     VALUES (@Id, @OrderId, @ProductId, @Quantity)
                     """;
 
@@ -100,7 +100,6 @@ public class ReportRepository : IReportRepository
         }
 
     }
-
     public async Task<List<ProductReport>> GetProducts(int limit = 10)
     {
         using var connection =
@@ -116,5 +115,29 @@ public class ReportRepository : IReportRepository
             Limit = limit
         });
         return products.ToList();
+    }
+    public async Task RegisterProductCreated(Guid idProduct,
+                                            string name,
+                                            string description,
+                                            DateOnly creationDate)
+    {
+
+        _logger.LogDebug($"Valueof creationDate in report repository is: {CreationDate}");
+
+        // TODO: Implement the validation in method to register product created
+        using var connection =
+                    (NpgsqlConnection)await _dbConnectionFactory.CreateConnection();
+
+        string sql = """
+                        INSERT INTO products (id, name, description, creationdate)
+                        VALUES (@Id, @Name, @Description, @CreationDate)
+                     """;
+        await connection.ExecuteAsync(sql, new
+        {
+            Id = idProduct,
+            Name = name,
+            Description = description,
+            CreationDate = creationDate.ToDateTime(TimeOnly.MinValue)
+        });
     }
 }

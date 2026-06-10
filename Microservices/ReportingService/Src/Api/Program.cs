@@ -17,3 +17,5 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 
 app.Run();
+
+// TODO: Fix the problem with linux library and problem of data type in database

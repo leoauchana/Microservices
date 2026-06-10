@@ -11,35 +11,35 @@ using RabbitMQ.Client.Events;
 
 namespace Infraestructure.Messaging.RabbitMq.Consumers;
 
-public class OrderCreatedConsumer : BackgroundService
+public class ProductCreatedConsumer : BackgroundService
 {
     private readonly RabbitMqConnection _rabbitMqConnection;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly ILogger<OrderCreatedConsumer> _logger;
-    public OrderCreatedConsumer(
+    private readonly ILogger<ProductCreatedConsumer> _logger;
+    public ProductCreatedConsumer(
         RabbitMqConnection rabbitMqConnection,
-        IServiceScopeFactory serviceScopeFactory,
-        ILogger<OrderCreatedConsumer> logger)
+        ILogger<ProductCreatedConsumer> logger,
+        IServiceScopeFactory serviceScopeFactory)
     {
         _rabbitMqConnection = rabbitMqConnection;
-        _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
+        _serviceScopeFactory = serviceScopeFactory;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var connection = await _rabbitMqConnection.CreateConnectionAsync();
 
-        using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
-
+        using var channel = await connection.CreateChannelAsync(
+                                                cancellationToken: stoppingToken);
         await channel.ExchangeDeclareAsync(
-            exchange: RabbitMqTopics.OrdersExchange,
+            exchange: RabbitMqTopics.ProductsExchange,
             type: ExchangeType.Topic,
             durable: true,
             cancellationToken: stoppingToken
         );
 
         await channel.QueueDeclareAsync(
-            queue: "order.register.queue",
+            queue: "product.register.queue",
             durable: true,
             exclusive: false,
             autoDelete: false,
@@ -47,9 +47,9 @@ public class OrderCreatedConsumer : BackgroundService
         );
 
         await channel.QueueBindAsync(
-            exchange: RabbitMqTopics.OrdersExchange,
-            queue: "order.register.queue",
-            routingKey: RabbitMqTopics.OrderCreatedRoutingKey,
+            exchange: RabbitMqTopics.ProductsExchange,
+            queue: "product.register.queue",
+            routingKey: RabbitMqTopics.ProductCreatedRoutingKey,
             cancellationToken: stoppingToken
         );
 
@@ -61,27 +61,32 @@ public class OrderCreatedConsumer : BackgroundService
             {
                 var body = eventArgs.Body.ToArray();
 
-                var message = Encoding.UTF8.GetString(body);
+                var mmesage = Encoding.UTF8.GetString(body);
 
-                var orderCretedEvent = JsonSerializer
-                                        .Deserialize<OrderCreatedEvent>
-                                        (message);
+                var productCreatedEvent = JsonSerializer
+                                            .Deserialize<ProductCreatedEvent>
+                                            (mmesage);
 
-                if (orderCretedEvent == null) 
-                return;
+                if (productCreatedEvent is null)
+                {
+                    _logger.LogError("ProductCreatedEvent is null");
+                    return;
+                }
 
                 using var scope = _serviceScopeFactory.CreateScope();
 
-                var _reportingService = scope
+                var reportingService = scope
                                         .ServiceProvider
                                         .GetRequiredService<IReportingService>();
 
-                await _reportingService.RegisterOrderCreated(
-                    orderCretedEvent.idOrder,
-                    orderCretedEvent.total,
-                    orderCretedEvent.creationDate,
-                    orderCretedEvent.productStock
-                );
+                var productCreated = await reportingService.RegisterProductCreated(
+                                            productCreatedEvent.id,
+                                            productCreatedEvent.name,
+                                            productCreatedEvent.description,
+                                            productCreatedEvent.creationDate);
+
+                if (productCreated) _logger.LogInformation("Product created registered successfully");
+                else _logger.LogError("Error registering product created");
 
                 await channel.BasicAckAsync(
                     eventArgs.DeliveryTag,
@@ -92,8 +97,8 @@ public class OrderCreatedConsumer : BackgroundService
             catch (Exception e)
             {
                 _logger.LogError(
-                e,
-                "Error processing message");
+                    e, "Error processing message");
+                    
                 await channel.BasicNackAsync(
                     eventArgs.DeliveryTag,
                     multiple: false,
@@ -102,18 +107,19 @@ public class OrderCreatedConsumer : BackgroundService
                 );
             }
         };
+
         await channel.BasicConsumeAsync(
-            queue: "order.register.queue",
+            queue: "product.register.queue",
             autoAck: false,
             consumer,
             cancellationToken: stoppingToken
         );
 
-        _logger.LogInformation("OrderCreatedConsumer started and waiting for messages.");
-        
+        _logger.LogInformation("ProductCreatedConsumer ready for listen to messages");
+
         await Task.Delay(
             Timeout.Infinite,
-            stoppingToken
+            cancellationToken: stoppingToken
         );
     }
 }
