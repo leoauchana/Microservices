@@ -4,5 +4,5 @@ public record ProductCreatedEvent(
     Guid id,
     string name,
     string description,
-    DateOnly creationDate
+    DateTime creationDate
 );

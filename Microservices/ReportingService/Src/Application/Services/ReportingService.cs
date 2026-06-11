@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Exceptions;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -14,23 +15,38 @@ public class ReportingService : IReportingService
         _repository = repository;
     }
 
-    public async Task<List<OrderReport>> GetOrdersByDate(
-        int limit = 10,
+    // Methods for api
+
+    public async Task<List<OrderDto.GetOrderByDateResponse>> GetOrdersByDate(
+        int page = 1,
+        int pageSize = 10,
         DateOnly? date = null)
     {
-        if (!(limit > 0)) throw new FormatInvalidException("Limit has a value invalid");
+        if (!(page > 0) && !(pageSize > 0)) throw new FormatInvalidException("Limit has a value invalid");
 
-        var ordersFound = await _repository.GetOrdersByDate(limit, date);
+        var ordersFound = await _repository.GetOrdersByDate(page, pageSize, date);
 
-        if (!ordersFound.Any()) return new List<OrderReport>();
+        if (!ordersFound.Any()) return new List<OrderDto.GetOrderByDateResponse>();
 
-        return ordersFound;
+        return ordersFound.Select(o => new OrderDto.GetOrderByDateResponse())
+                           .ToList();
     }
+
+    public async Task<List<ProductDto.GetProductsMoreSalesResponse>> GetProductsMoreSales(
+        int page = 1,
+        int pageSize = 10,
+        DateOnly? date = null
+        )
+    {
+        throw new NotImplementedException();
+    }
+
+    // Methods for register the events of message broker
 
     public async Task<bool> RegisterOrderCreated(
         Guid idOrder,
         decimal total,
-        DateOnly creationDate,
+        DateTime creationDate,
         Dictionary<Guid, int> productStock)
     {
         Dictionary<Guid, int> productStockValidated = new Dictionary<Guid, int>();
@@ -51,9 +67,8 @@ public class ReportingService : IReportingService
     public async Task<bool> RegisterProductCreated(Guid idProduct,
                                                     string name,
                                                     string description,
-                                                    DateOnly creationDate)
+                                                    DateTime creationDate)
     {
-        // TODO: Implement method to register product created
         await _repository.RegisterProductCreated(
                                     idProduct,
                                     name,

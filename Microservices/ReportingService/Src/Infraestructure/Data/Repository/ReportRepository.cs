@@ -18,9 +18,12 @@ public class ReportRepository : IReportRepository
         _logger = logger;
     }
     public async Task<List<OrderReport>> GetOrdersByDate(
-        int limit = 10,
+        int page = 1,
+        int pageSize = 10,
         DateOnly? date = null)
     {
+        var offset = (page - 1) * pageSize;
+
         using var connection = await _dbConnectionFactory.CreateConnection();
 
         var sql = new StringBuilder(
@@ -38,20 +41,39 @@ public class ReportRepository : IReportRepository
         }
         sql.Append("""
         
-                    LIMIT @Limit
+                    LIMIT @PageSize
+                    OFFSET @OffSet
                     """);
 
         var orders = await connection.QueryAsync<OrderReport>(sql.ToString(), new
         {
-            Limit = limit,
+            Limit = pageSize,
+            OffSet = offset,
             Date = date
         });
         return orders.ToList();
     }
+
+    public async Task<List<ProductReport>> GetProducts(int limit = 10)
+    {
+        using var connection =
+                    (NpgsqlConnection)await _dbConnectionFactory.CreateConnection();
+
+        string sql = """
+                        SELECT * FROM products
+                        LIMIT @Limit
+                     """;
+        var products = await connection.QueryAsync<ProductReport>(sql,
+        new
+        {
+            Limit = limit
+        });
+        return products.ToList();
+    }
     public async Task RegisterOrderCreated(
         Guid orderId,
         decimal total,
-        DateOnly creationDate,
+        DateTime creationDate,
         Dictionary<Guid, int> productStock)
     {
         using var connection =
@@ -70,7 +92,7 @@ public class ReportRepository : IReportRepository
             {
                 Id = orderId,
                 Total = total,
-                CreationDate = creationDate.ToDateTime(TimeOnly.MinValue)
+                CreationDate = creationDate
             }, transaction);
 
             string orderItemSql = """
@@ -100,31 +122,13 @@ public class ReportRepository : IReportRepository
         }
 
     }
-    public async Task<List<ProductReport>> GetProducts(int limit = 10)
-    {
-        using var connection =
-                    (NpgsqlConnection)await _dbConnectionFactory.CreateConnection();
 
-        string sql = """
-                        SELECT * FROM products
-                        LIMIT @Limit
-                     """;
-        var products = await connection.QueryAsync<ProductReport>(sql,
-        new
-        {
-            Limit = limit
-        });
-        return products.ToList();
-    }
     public async Task RegisterProductCreated(Guid idProduct,
                                             string name,
                                             string description,
-                                            DateOnly creationDate)
+                                            DateTime creationDate)
     {
 
-        _logger.LogDebug($"Valueof creationDate in report repository is: {CreationDate}");
-
-        // TODO: Implement the validation in method to register product created
         using var connection =
                     (NpgsqlConnection)await _dbConnectionFactory.CreateConnection();
 
@@ -137,7 +141,7 @@ public class ReportRepository : IReportRepository
             Id = idProduct,
             Name = name,
             Description = description,
-            CreationDate = creationDate.ToDateTime(TimeOnly.MinValue)
+            CreationDate = creationDate
         });
     }
 }

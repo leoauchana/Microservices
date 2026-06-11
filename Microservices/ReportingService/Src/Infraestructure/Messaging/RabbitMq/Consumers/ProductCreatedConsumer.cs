@@ -79,6 +79,10 @@ public class ProductCreatedConsumer : BackgroundService
                                         .ServiceProvider
                                         .GetRequiredService<IReportingService>();
 
+                _logger.LogInformation(
+                        "Processing ProductCreated event. CreationDate: {CreationDate}",
+                        productCreatedEvent.creationDate.ToString("yyyy-MM-dd"));
+
                 var productCreated = await reportingService.RegisterProductCreated(
                                             productCreatedEvent.id,
                                             productCreatedEvent.name,
@@ -98,7 +102,7 @@ public class ProductCreatedConsumer : BackgroundService
             {
                 _logger.LogError(
                     e, "Error processing message");
-                    
+
                 await channel.BasicNackAsync(
                     eventArgs.DeliveryTag,
                     multiple: false,

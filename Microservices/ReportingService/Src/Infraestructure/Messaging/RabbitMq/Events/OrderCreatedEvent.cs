@@ -3,6 +3,6 @@ namespace Infraestructure.Messaging.RabbitMq.Events;
 public record OrderCreatedEvent(
     Guid idOrder,
     decimal total,
-    DateOnly creationDate,
+    DateTime creationDate,
     Dictionary<Guid, int> productStock
 );
