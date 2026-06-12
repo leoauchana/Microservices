@@ -1,4 +1,5 @@
 using System.Text;
+using Application.Common;
 using Application.Interfaces.Repositories;
 using Application.ReadModels;
 using Dapper;
@@ -17,59 +18,110 @@ public class ReportRepository : IReportRepository
         _dbConnectionFactory = dbConnectionFactory;
         _logger = logger;
     }
-    public async Task<List<OrderReport>> GetOrdersByDate(
+    public async Task<PagedResult<OrderReport>> GetOrdersByDate(
         int page = 1,
         int pageSize = 10,
-        DateOnly? date = null)
+        DateOnly? from = null,
+        DateOnly? to = null)
     {
         var offset = (page - 1) * pageSize;
 
         using var connection = await _dbConnectionFactory.CreateConnection();
 
-        var sql = new StringBuilder(
-            """
-            SELECT * FROM orders
-            WHERE 1 = 1
-            """);
+        var sql = """
+                        SELECT COUNT(*)
+                        FROM orders
+                        WHERE (@From IS NULL OR creationdate >= @From)
+                            AND (@To IS NULL OR creationdate < @To);
 
-        if (date.HasValue)
-        {
-            sql.Append("""
-        
-                        AND creationdate = @Date
-                        """);
-        }
-        sql.Append("""
-        
-                    LIMIT @PageSize
-                    OFFSET @OffSet
-                    """);
+                        SELECT *
+                        FROM orders
+                        WHERE (@From IS NULL OR creationdate >= @From)
+                            AND (@To IS NULL OR creationdate < @To)
+                        ORDER BY creationdate DESC
+                        LIMIT @PageSize
+                        OFFSET @OffSet;
+            """;
 
-        var orders = await connection.QueryAsync<OrderReport>(sql.ToString(), new
+        using var result = await connection.QueryMultipleAsync(sql, new
         {
-            Limit = pageSize,
+            PageSize = pageSize,
             OffSet = offset,
-            Date = date
+            From = from,
+            To = to
         });
-        return orders.ToList();
-    }
 
-    public async Task<List<ProductReport>> GetProducts(int limit = 10)
-    {
-        using var connection =
-                    (NpgsqlConnection)await _dbConnectionFactory.CreateConnection();
+        var count = await result.ReadSingleAsync<int>();
 
-        string sql = """
-                        SELECT * FROM products
-                        LIMIT @Limit
-                     """;
-        var products = await connection.QueryAsync<ProductReport>(sql,
-        new
+        var orders = (await result.ReadAsync<OrderReport>());
+
+        return new PagedResult<OrderReport>
         {
-            Limit = limit
-        });
-        return products.ToList();
+            Items = orders.ToList(),
+            TotalRecords = count,
+            Page = page,
+            PageSize = pageSize
+        };
     }
+
+    public async Task<PagedResult<ProductReport>> GetProductsMoreSalesByDate(
+        int page = 1,
+        int pageSize = 10,
+        DateOnly? from = null,
+        DateOnly? to = null)
+    {
+        var offset = (page - 1) * pageSize;
+
+        using var connection = await _dbConnectionFactory.CreateConnection();
+
+        var sql =
+            """
+            SELECT COUNT(*)
+            FROM 
+            (orders o
+            INNER JOIN order_item oi
+                ON o.id = oi.orderId
+            INNER JOIN products p
+                ON p.id = oi.productId
+            WHERE (@From IS NULL OR creationdate >= @From)
+                AND (@To IS NULL OR creationdate < @To)
+            GROUP BY p.id) x;
+
+            SELECT p.name, p.description, SUM(oi.quantity) as CountSaled 
+            FROM products p
+            INNER JOIN order_item oi
+                ON p.id = oi.productid
+            INNER JOIN orders o
+                ON o.id = oi.orderid
+            WHERE (@From IS NULL OR creationdate >= @From)
+                AND (@To IS NULL OR creationdate < @To)
+            GROUP BY p.id
+            ORDER BY CountSaled DESC
+            LIMIT @PageSize
+            OFFSET @OffSet;
+            """;
+
+        using var result = await connection.QueryMultipleAsync(sql, new
+        {
+            PageSize = pageSize,
+            OffSet = offset,
+            From = from,
+            To = to
+        });
+
+        var count = await result.ReadSingleAsync<int>();
+
+        var products = (await result.ReadAsync<ProductReport>()).ToList();
+        
+        return new PagedResult<ProductReport>
+        {
+            Items = products,
+            TotalRecords = count,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task RegisterOrderCreated(
         Guid orderId,
         decimal total,

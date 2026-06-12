@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.ReadModels;
 
 namespace Application.Interfaces.Repositories;
@@ -8,9 +9,14 @@ public interface IReportRepository
                                     decimal total,
                                     DateTime creationDate,
                                     Dictionary<Guid, int> productStock);
-    Task<List<OrderReport>> GetOrdersByDate(int page,
+    Task<PagedResult<OrderReport>> GetOrdersByDate(int page,
                                             int pageSize,
-                                            DateOnly? date = null);
+                                            DateOnly? from = null,
+                                            DateOnly? to = null);
+    Task<PagedResult<ProductReport>> GetProductsMoreSalesByDate(int page,
+                                            int pageSize,
+                                            DateOnly? from = null,
+                                            DateOnly? to = null);
     Task RegisterProductCreated(Guid idProduct,
                                 string name,
                                 string description,

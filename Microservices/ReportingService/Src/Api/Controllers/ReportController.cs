@@ -13,13 +13,25 @@ public class ReportController : ControllerBase
         _reportingService = reportingService;
     }
 
-    [HttpGet]
+    [HttpGet("getOrders")]
     public async Task<IActionResult> GetOrdersByDate(
-        [FromQuery] int limit = 10,
-        [FromQuery] DateOnly? date = null)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] DateOnly? from = null,
+        [FromQuery] DateOnly? to = null)
     {
-        var orders = await _reportingService.GetOrdersByDate(limit, date);
+        var orders = await _reportingService.GetOrdersByDate(page, pageSize, from, to);
 
         return Ok(new { ordersFound = orders, count = orders.Count });
+    }
+    [HttpGet("getProducts")]
+    public async Task<IActionResult> GetProductsMoreSales(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] DateOnly? date = null)
+    {
+        var products = await _reportingService.GetProductsMoreSales(page, pageSize, date);
+
+        return Ok(new { productsFound = products, count = products.Count });
     }
 }

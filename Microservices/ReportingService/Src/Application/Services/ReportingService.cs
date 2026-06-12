@@ -17,18 +17,26 @@ public class ReportingService : IReportingService
 
     // Methods for api
 
+
+    // TODO: Fix and define dtos for this method
     public async Task<List<OrderDto.GetOrderByDateResponse>> GetOrdersByDate(
         int page = 1,
         int pageSize = 10,
-        DateOnly? date = null)
+        DateOnly? from = null,
+        DateOnly? to = null)
     {
         if (!(page > 0) && !(pageSize > 0)) throw new FormatInvalidException("Limit has a value invalid");
 
-        var ordersFound = await _repository.GetOrdersByDate(page, pageSize, date);
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
 
-        if (!ordersFound.Any()) return new List<OrderDto.GetOrderByDateResponse>();
+        var pagedResult = await _repository.GetOrdersByDate(page, pageSize, from, to);
 
-        return ordersFound.Select(o => new OrderDto.GetOrderByDateResponse())
+        if (!pagedResult.Items.Any()) return new List<OrderDto.GetOrderByDateResponse>();
+
+        var 
+
+        return pagedResult..Select(o => new OrderDto.GetOrderByDateResponse())
                            .ToList();
     }
 

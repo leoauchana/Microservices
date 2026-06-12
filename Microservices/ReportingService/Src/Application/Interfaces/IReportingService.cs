@@ -15,7 +15,8 @@ public interface IReportingService
                                       DateTime creationDate);
     Task<List<OrderDto.GetOrderByDateResponse>> GetOrdersByDate(int page = 1,
                                             int pageSize = 50,
-                                            DateOnly? date = null);
+                                            DateOnly? from = null,
+                                            DateOnly? to = null);
     Task<List<ProductDto.GetProductsMoreSalesResponse>> GetProductsMoreSales(int page = 1,
                                                                             int pageSize = 10,
                                                                             DateOnly? date = null);
